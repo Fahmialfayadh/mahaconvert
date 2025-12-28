@@ -131,17 +131,10 @@ def cancel(job_id):
 def download(job_id):
     url = get_download_url(job_id)
 
-    if not url:
-        return jsonify({
-            "error": "File not ready or job not finished"
-        }), 404
+    if not url or "signedURL" not in url:
+        return jsonify({"error": "File not ready or job not finished"}), 404
 
-    # Handle different Supabase response formats
-    signed_url = url.get("signedUrl") or url.get("signedURL") or url.get("signed_url")
-    if not signed_url:
-        return jsonify({"error": "Could not generate download URL", "debug": str(url)}), 500
-    
-    return redirect(signed_url)
+    return redirect(url["signedURL"])
 
 
 # =========================
