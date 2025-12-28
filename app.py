@@ -136,7 +136,12 @@ def download(job_id):
             "error": "File not ready or job not finished"
         }), 404
 
-    return redirect(url["signedUrl"])
+    # Handle different Supabase response formats
+    signed_url = url.get("signedUrl") or url.get("signedURL") or url.get("signed_url")
+    if not signed_url:
+        return jsonify({"error": "Could not generate download URL", "debug": str(url)}), 500
+    
+    return redirect(signed_url)
 
 
 # =========================
