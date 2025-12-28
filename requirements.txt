@@ -3,7 +3,7 @@ Flask==3.0.0
 Werkzeug==3.0.1
 gunicorn==21.2.0
 
-# Database - use older compatible version
+# Database
 supabase==2.0.0
 
 # Environment
@@ -11,6 +11,7 @@ python-dotenv==1.0.0
 
 # Image Processing
 Pillow==10.2.0
+pillow-heif==0.18.0
 
 # Audio Processing
 pydub==0.25.1
@@ -21,9 +22,15 @@ ffmpeg-python==0.2.0
 # PDF Processing
 pypdf==4.0.0
 pdf2image==1.17.0
+pdf2docx==0.5.8
+
+# SVG Processing
+svglib==1.5.1
+reportlab==4.1.0
 
 # Compression
 zstandard==0.22.0
 Brotli==1.1.0
 
+# HTTP
 requests==2.32.5

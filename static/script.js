@@ -44,20 +44,52 @@ function detectFile() {
   const ext = fileInput.files[0].name.split(".").pop().toLowerCase();
   toFormat.innerHTML = "";
 
-  if (["jpg", "jpeg", "png", "webp", "avif"].includes(ext)) {
-    addOptions(["jpg", "png", "webp", "avif"]);
-    convertHint.textContent = "Gambar dapat dikonversi ke format umum & modern.";
+  // ========== IMAGE FORMATS ==========
+  if (["jpg", "jpeg", "png", "webp", "avif", "bmp"].includes(ext)) {
+    addOptions(["jpg", "png", "webp", "avif", "pdf"]);
+    convertHint.textContent = "Konversi gambar atau buat PDF dari gambar.";
+
+    // HEIC (iPhone photos) - Killer Feature
+  } else if (["heic", "heif"].includes(ext)) {
+    addOptions(["jpg", "png", "webp", "pdf"]);
+    convertHint.textContent = "📱 Foto iPhone akan dikonversi ke format universal.";
+
+    // SVG (Vector to Raster)
+  } else if (ext === "svg") {
+    addOptions(["png"]);
+    convertHint.textContent = "🎨 Vector SVG akan dirasterisasi ke PNG.";
+
+    // ========== VIDEO FORMATS ==========
+  } else if (["mp4", "mkv", "webm", "avi", "mov", "flv"].includes(ext)) {
+    addOptions(["mp4", "webm", "gif", "mp3", "aac", "wav"]);
+    convertHint.textContent = "🎬 Konversi video, buat GIF, atau ekstrak audio.";
+
+    // ========== AUDIO FORMATS (FULL BIDIRECTIONAL) ==========
+  } else if (["wav", "mp3", "aac", "opus", "ogg", "flac", "m4a", "aiff"].includes(ext)) {
+    addOptions(["mp3", "wav", "ogg", "aac", "opus", "flac"]);
+    convertHint.textContent = "🎵 Konversi audio ke format apapun.";
+
+    // ========== PDF ==========
   } else if (ext === "pdf") {
-    addOptions(["png", "jpg", "webp"]);
-    convertHint.textContent = "PDF akan dikonversi per halaman.";
-  } else if (["wav", "mp3", "aac", "opus"].includes(ext)) {
-    addOptions(["mp3", "opus", "aac"]);
-    convertHint.textContent = "Konversi audio tanpa mengubah durasi.";
-  } else if (["mp4", "mkv", "webm"].includes(ext)) {
-    addOptions(["mp4"]);
-    convertHint.textContent = "Video akan dire-encode ke MP4.";
+    addOptions(["docx", "png", "jpg", "webp"]);
+    convertHint.textContent = "📄 Konversi PDF ke Word atau gambar.";
+
+    // ========== OFFICE DOCUMENTS ==========
+  } else if (["docx", "doc"].includes(ext)) {
+    addOptions(["pdf"]);
+    convertHint.textContent = "📝 Konversi Word ke PDF.";
+
+  } else if (["pptx", "ppt"].includes(ext)) {
+    addOptions(["pdf"]);
+    convertHint.textContent = "📊 Konversi PowerPoint ke PDF.";
+
+  } else if (["xlsx", "xls"].includes(ext)) {
+    addOptions(["pdf"]);
+    convertHint.textContent = "📈 Konversi Excel ke PDF.";
+
+    // ========== UNSUPPORTED ==========
   } else {
-    convertHint.textContent = "Format ini belum mendukung konversi.";
+    convertHint.textContent = "⚠️ Format ini belum didukung untuk konversi.";
   }
 }
 

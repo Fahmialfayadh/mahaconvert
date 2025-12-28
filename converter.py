@@ -10,10 +10,36 @@ from pypdf import PdfReader, PdfWriter
 from pdf2image import convert_from_path
 import zipfile
 
+# HEIC Support (iPhone photos)
+try:
+    from pillow_heif import register_heif_opener
+    register_heif_opener()
+    HEIC_SUPPORTED = True
+except ImportError:
+    HEIC_SUPPORTED = False
+
+# SVG Support
+try:
+    from svglib.svglib import svg2rlg
+    from reportlab.graphics import renderPM
+    SVG_SUPPORTED = True
+except ImportError:
+    SVG_SUPPORTED = False
+
+# PDF to DOCX Support
+try:
+    from pdf2docx import Converter as PDFConverter
+    PDF2DOCX_SUPPORTED = True
+except ImportError:
+    PDF2DOCX_SUPPORTED = False
+
 
 class MahaConvert:
-    IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp", "avif"}
-    AUDIO_FORMATS = {"mp3", "wav", "opus", "aac"}
+    # Extended format sets for bidirectional support
+    IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp", "avif", "bmp", "heic"}
+    AUDIO_FORMATS = {"mp3", "wav", "opus", "aac", "ogg", "flac", "m4a", "aiff"}
+    VIDEO_FORMATS = {"mp4", "webm", "mkv", "avi", "mov", "flv", "gif"}
+    DOC_FORMATS = {"pdf", "docx", "pptx", "xlsx", "doc", "ppt", "xls"}
 
     def __init__(self, output_dir="output"):
         self.output_dir = output_dir
@@ -58,43 +84,91 @@ class MahaConvert:
         Atau ke format request user
         """
         ftype = self.detect_type(input_path)
+        input_ext = self.detect_ext(input_path)
+        request_format = request_format.lower() if request_format else None
 
-        # IMAGE → PNG
+        # ========== IMAGE ==========
         if ftype == "image":
+            # SVG special handling
+            if input_ext == "svg":
+                return self.svg_to_png(input_path)
+            
+            # Image → PDF
+            if request_format == "pdf":
+                return self.image_to_pdf(input_path)
+            
+            # Image → Image (including HEIC)
             return self.image_convert(
                 input_path,
                 to_format=request_format or "png",
                 quality=85
             )
 
-        # AUDIO → MP3
+        # ========== AUDIO ==========
         if ftype == "audio":
             return self.audio_convert(
                 input_path,
                 to_format=request_format or "mp3",
-                bitrate="128k"
+                bitrate="192k"
             )
 
-        # VIDEO → MP4
+        # ========== VIDEO ==========
         if ftype == "video":
-            # jika user minta format specific (misal convert container),
-            # sementara kita paksa mp4 karena func video_compress hardcoded mp4.
-            # TODO: support video conversion to other formats explicitly if needed
-            return self.video_compress(
-                input_path,
-                crf=28
-            )
+            if request_format == "webm":
+                return self.video_to_webm(input_path)
+            elif request_format == "gif":
+                return self.video_to_gif(input_path)
+            elif request_format in ("mp3", "aac", "wav", "ogg", "flac", "opus"):
+                return self.video_to_audio(input_path, to_format=request_format)
+            elif request_format in ("mp4", "mkv", "avi", "mov"):
+                return self.video_convert(input_path, to_format=request_format)
+            else:
+                # Default: compress to MP4
+                return self.video_compress(input_path, crf=28)
 
-        # PDF → IMAGE (HALAMAN 1)
+        # ========== PDF ==========
         if ftype == "pdf":
-            images = self.pdf_to_images(
-                input_path,
-                to_format=request_format or "png",
-                dpi=200
-            )
-            return images[0]  # jelas: ambil halaman pertama
+            if request_format == "docx":
+                return self.pdf_to_docx(input_path)
+            elif request_format in ("png", "jpg", "jpeg", "webp"):
+                images = self.pdf_to_images(
+                    input_path,
+                    to_format=request_format,
+                    dpi=200
+                )
+                # Return first page or all pages if multiple
+                if len(images) == 1:
+                    return images[0]
+                else:
+                    # Zip multiple pages
+                    return self._zip_files(images, input_path)
+            else:
+                # Default: first page as PNG
+                images = self.pdf_to_images(input_path, to_format="png", dpi=200)
+                return images[0]
+
+        # ========== OFFICE DOCUMENTS ==========
+        if input_ext in ("docx", "doc", "pptx", "ppt", "xlsx", "xls"):
+            if request_format == "pdf":
+                return self.office_to_pdf(input_path)
+            else:
+                # Default: convert to PDF
+                return self.office_to_pdf(input_path)
 
         raise ValueError(f"Unsupported file type: {ftype}")
+
+    def _zip_files(self, files, original_path):
+        """Zip multiple output files"""
+        name = os.path.splitext(os.path.basename(original_path))[0]
+        output = self._out(name, "zip")
+        
+        with zipfile.ZipFile(output, 'w', zipfile.ZIP_DEFLATED) as zf:
+            for f in files:
+                zf.write(f, os.path.basename(f))
+                # Clean up individual files
+                os.remove(f)
+        
+        return output
 
     # ==================================================
     # IMAGE ⇄ IMAGE (ANY TO ANY)
@@ -247,3 +321,256 @@ class MahaConvert:
         with open(output, "wb") as f:
             f.write(brotli.compress(data, quality=quality))
         return output
+
+    # ==================================================
+    # VIDEO → WEBM (VP9) 
+    # ==================================================
+    def video_to_webm(self, input_path, crf=30):
+        """Convert video to WebM format with VP9 codec"""
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "webm")
+
+        (
+            ffmpeg
+            .input(input_path)
+            .output(
+                output,
+                vcodec="libvpx-vp9",
+                crf=crf,
+                preset="veryfast",
+                acodec="libopus",
+                audio_bitrate="128k"
+            )
+            .overwrite_output()
+            .run(quiet=True)
+        )
+        return output
+
+    # ==================================================
+    # VIDEO → AUDIO (EXTRACT MP3/AAC)
+    # ==================================================
+    def video_to_audio(self, input_path, to_format="mp3", bitrate="128k"):
+        """Extract audio from video file"""
+        to_format = to_format.lower()
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, to_format)
+
+        # Map format to codec
+        codec_map = {
+            "mp3": "libmp3lame",
+            "aac": "aac",
+            "opus": "libopus",
+            "wav": "pcm_s16le",
+            "ogg": "libvorbis",
+            "flac": "flac"
+        }
+        acodec = codec_map.get(to_format, "libmp3lame")
+
+        (
+            ffmpeg
+            .input(input_path)
+            .output(
+                output,
+                vn=None,  # No video
+                acodec=acodec,
+                audio_bitrate=bitrate
+            )
+            .overwrite_output()
+            .run(quiet=True)
+        )
+        return output
+
+    # ==================================================
+    # VIDEO → GIF (ANIMATED)
+    # ==================================================
+    def video_to_gif(self, input_path, fps=10, scale=480):
+        """Convert short video to animated GIF with palette optimization"""
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "gif")
+        palette = self._out(name, "palette.png")
+
+        # Step 1: Generate palette
+        (
+            ffmpeg
+            .input(input_path)
+            .output(
+                palette,
+                vf=f"fps={fps},scale={scale}:-1:flags=lanczos,palettegen"
+            )
+            .overwrite_output()
+            .run(quiet=True)
+        )
+
+        # Step 2: Create GIF with palette
+        (
+            ffmpeg
+            .input(input_path)
+            .input(palette)
+            .output(
+                output,
+                filter_complex=f"fps={fps},scale={scale}:-1:flags=lanczos[x];[x][1:v]paletteuse"
+            )
+            .overwrite_output()
+            .run(quiet=True)
+        )
+
+        # Cleanup palette
+        if os.path.exists(palette):
+            os.remove(palette)
+
+        return output
+
+    # ==================================================
+    # VIDEO → ANY FORMAT (GENERAL)
+    # ==================================================
+    def video_convert(self, input_path, to_format="mp4", crf=28):
+        """General video format conversion"""
+        to_format = to_format.lower()
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, to_format)
+
+        if to_format == "webm":
+            return self.video_to_webm(input_path, crf=crf)
+        elif to_format == "gif":
+            return self.video_to_gif(input_path)
+        elif to_format in ("mp3", "aac", "wav", "ogg", "flac", "opus"):
+            return self.video_to_audio(input_path, to_format=to_format)
+        else:
+            # Default: H.264 MP4/MKV/MOV/AVI
+            vcodec = "libx264"
+            acodec = "aac"
+            
+            (
+                ffmpeg
+                .input(input_path)
+                .output(
+                    output,
+                    vcodec=vcodec,
+                    crf=crf,
+                    preset="veryfast",
+                    acodec=acodec,
+                    audio_bitrate="128k"
+                )
+                .overwrite_output()
+                .run(quiet=True)
+            )
+            return output
+
+    # ==================================================
+    # SVG → PNG (VECTOR TO RASTER)
+    # ==================================================
+    def svg_to_png(self, input_path, scale=2.0):
+        """Convert SVG vector to PNG raster image"""
+        if not SVG_SUPPORTED:
+            raise ValueError("SVG conversion requires svglib and reportlab")
+
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "png")
+
+        drawing = svg2rlg(input_path)
+        if drawing is None:
+            raise ValueError("Failed to parse SVG file")
+
+        # Scale the drawing
+        drawing.width = drawing.width * scale
+        drawing.height = drawing.height * scale
+        drawing.scale(scale, scale)
+
+        renderPM.drawToFile(drawing, output, fmt="PNG")
+        return output
+
+    # ==================================================
+    # IMAGE → PDF (SINGLE OR MULTIPLE)
+    # ==================================================
+    def image_to_pdf(self, input_path):
+        """Convert single image to PDF"""
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "pdf")
+
+        img = Image.open(input_path)
+        
+        # Convert to RGB if needed (PDF doesn't support RGBA)
+        if img.mode in ("RGBA", "P"):
+            img = img.convert("RGB")
+
+        img.save(output, "PDF", resolution=100.0)
+        return output
+
+    def images_to_pdf(self, input_paths):
+        """Combine multiple images into a single PDF"""
+        if not input_paths:
+            raise ValueError("No images provided")
+
+        # Use first image name for output
+        name = os.path.splitext(os.path.basename(input_paths[0]))[0]
+        output = self._out(name + "_combined", "pdf")
+
+        images = []
+        for path in input_paths:
+            img = Image.open(path)
+            if img.mode in ("RGBA", "P"):
+                img = img.convert("RGB")
+            images.append(img)
+
+        # Save first image with append_images
+        images[0].save(
+            output,
+            "PDF",
+            resolution=100.0,
+            save_all=True,
+            append_images=images[1:] if len(images) > 1 else []
+        )
+        return output
+
+    # ==================================================
+    # PDF → DOCX (WORD)
+    # ==================================================
+    def pdf_to_docx(self, input_path):
+        """Convert PDF to Word document"""
+        if not PDF2DOCX_SUPPORTED:
+            raise ValueError("PDF to DOCX requires pdf2docx library. Install with: pip install pdf2docx")
+
+        if not os.path.exists(input_path):
+            raise FileNotFoundError(f"PDF file not found: {input_path}")
+
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "docx")
+
+        try:
+            cv = PDFConverter(input_path)
+            cv.convert(output)
+            cv.close()
+        except Exception as e:
+            raise ValueError(f"PDF to DOCX conversion failed: {str(e)}")
+
+        if not os.path.exists(output):
+            raise ValueError("Conversion completed but output file not created")
+
+        return output
+
+    # ==================================================
+    # DOCX/PPTX/XLSX → PDF (VIA LIBREOFFICE)
+    # ==================================================
+    def office_to_pdf(self, input_path):
+        """Convert Office documents (DOCX, PPTX, XLSX) to PDF using LibreOffice"""
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        
+        # LibreOffice outputs to the same directory by default
+        cmd = [
+            "libreoffice",
+            "--headless",
+            "--convert-to", "pdf",
+            "--outdir", self.output_dir,
+            input_path
+        ]
+        
+        try:
+            subprocess.run(cmd, check=True, capture_output=True, timeout=120)
+        except FileNotFoundError:
+            raise ValueError("LibreOffice not installed. Required for Office to PDF conversion.")
+        except subprocess.TimeoutExpired:
+            raise ValueError("Conversion timed out")
+
+        output = self._out(name, "pdf")
+        return output
+

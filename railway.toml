@@ -12,3 +12,6 @@ value = "3.12"
 
 [build.nixpacksConfig]
 nixpacksPlan = "python"
+# Required system packages for conversions
+aptPkgs = ["ffmpeg", "ghostscript", "poppler-utils", "libreoffice"]
+
