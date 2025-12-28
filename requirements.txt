@@ -1,0 +1,27 @@
+# Image processing
+Pillow
+pillow-avif-plugin
+
+# Audio processing
+pydub
+
+# Video processing (Python wrapper)
+ffmpeg-python
+
+# PDF processing
+pypdf
+
+# General compression
+zstandard
+brotli
+
+#api
+flask
+pillow pillow-avif-plugin
+pydub ffmpeg-python
+pypdf
+zstandard brotli 
+pdf2image
+supabase
+python-dotenv
+zipfile36

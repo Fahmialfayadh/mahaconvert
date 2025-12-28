@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MahaConvert | File Processor</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+
+<body>
+  <div class="app-wrapper">
+
+    <div class="app-card">
+
+      <!-- NAV -->
+      <div class="d-flex justify-content-center pt-4 mb-3">
+        <ul class="nav nav-pills" id="pills-tab" role="tablist">
+          <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pills-home-tab" data-bs-toggle="pill" data-bs-target="#pills-home"
+              type="button" role="tab">Home</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <button class="nav-link" id="pills-about-tab" data-bs-toggle="pill" data-bs-target="#pills-about"
+              type="button" role="tab">About</button>
+          </li>
+          <li class="nav-item" role="presentation">
+            <a class="nav-link" href="https://mahalabs.fahmialfayadh.site" target="_blank" rel="noopener">Mahalabs</a>
+          </li>
+        </ul>
+      </div>
+
+      <div class="tab-content" id="pills-tabContent">
+
+        <!-- === HOME TAB === -->
+        <div class="tab-pane fade show active" id="pills-home" role="tabpanel">
+
+          <!-- MAIN FORM CARD -->
+          <div class="card-body" id="formCard">
+            <h3 class="text-center fw-bold mb-2">MahaConvert</h3>
+            <p class="text-center text-muted mb-4 small">
+              Experimental File Processor
+            </p>
+
+            <!-- FORM -->
+            <form method="POST" enctype="multipart/form-data" id="mainForm">
+
+              <!-- File -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-muted mb-2">Select File</label>
+                <input type="file" class="form-control rounded-pill" name="file" id="fileInput" required>
+              </div>
+
+              <!-- Action -->
+              <div class="mb-3">
+                <label class="form-label fw-semibold small text-muted mb-2">Action</label>
+                <select name="action" id="action" class="form-select rounded-pill">
+                  <option value="compress">Compress</option>
+                  <option value="convert">Convert</option>
+                </select>
+              </div>
+
+              <!-- Compress -->
+              <div id="compressBox" class="mb-4">
+                <div class="d-flex justify-content-between align-items-center mb-3">
+                  <label class="form-label fw-semibold mb-0 text-muted small">Compression Level</label>
+                  <span id="percent" class="fw-bold text-primary" style="font-size: 1.1rem;">50%</span>
+                </div>
+
+                <input type="range" class="form-range" name="target" id="targetRange" min="0" max="90" value="50">
+
+                <div class="d-flex justify-content-between mt-2">
+                  <small class="text-muted fw-semibold" style="font-size: 11px;">Low</small>
+                  <small class="text-muted fw-semibold" style="font-size: 11px;">High</small>
+                </div>
+              </div>
+
+              <!-- Convert -->
+              <div id="convertBox" class="mb-4 d-none">
+                <label class="form-label fw-semibold text-muted mb-2 small">Convert to</label>
+                <select name="to_format" id="toFormat" class="form-select rounded-pill"></select>
+                <small class="text-muted d-block mt-2 small" id="convertHint"></small>
+              </div>
+
+              <!-- Submit -->
+              <button type="submit" class="btn btn-primary w-100 rounded-pill py-3">
+                <span class="fw-bold">Process File</span>
+              </button>
+
+            </form>
+          </div>
+
+          <!-- SUCCESS STATE -->
+          <div class="card-body d-none text-center" id="doneCard">
+            <div class="mb-3">
+              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <circle cx="32" cy="32" r="30" fill="#6366f1" opacity="0.1" />
+                <path d="M20 32L28 40L44 24" stroke="#6366f1" stroke-width="4" stroke-linecap="round"
+                  stroke-linejoin="round" />
+              </svg>
+            </div>
+            <h4 class="fw-bold mb-2">Success!</h4>
+            <p class="text-muted mb-4 small">
+              Your file has been processed successfully.
+            </p>
+
+            <button class="btn btn-outline-primary rounded-pill px-4 py-2" onclick="location.reload()">
+              Process Another
+            </button>
+          </div>
+
+        </div>
+
+        <!-- === ABOUT TAB === -->
+        <div class="tab-pane fade" id="pills-about" role="tabpanel">
+          <div class="card-body text-center">
+
+            <h4 class="fw-bold mb-3">About MahaConvert</h4>
+
+            <p class="text-muted small mb-4">
+              MahaConvert is an experimental file processing platform that combines powerful compression and conversion
+              capabilities with a clean, professional interface.
+            </p>
+
+            <div class="p-3 rounded-3 mb-4" style="background-color: #f9fafb; border: 1px solid var(--border-color);">
+              <p class="mb-1 fw-bold text-primary">Mahalabs Experimental</p>
+              <p class="mb-0 text-muted" style="font-size: 12px;">© 2025 Research Division</p>
+            </div>
+
+            <p class="text-muted small">
+              Built with Flask, FFMpeg, and Supabase.
+            </p>
+
+          </div>
+        </div>
+
+      </div>
+
+    </div>
+  </div>
+
+  <!-- LOADING OVERLAY -->
+  <div id="loadingOverlay" class="loading-overlay d-none">
+    <div class="loading-card text-center">
+      <div class="spinner-border mb-3" role="status" style="width: 3rem; height: 3rem;">
+        <span class="visually-hidden">Loading...</span>
+      </div>
+      <h5 class="fw-bold mb-3" id="loadingStatus">Initializing...</h5>
+
+      <div class="progress mb-2">
+        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
+      </div>
+
+      <small class="text-muted fw-semibold" id="progressText">0%</small>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='script.js') }}"></script>
+</body>
+
+</html>
