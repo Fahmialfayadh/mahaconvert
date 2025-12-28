@@ -7,6 +7,7 @@ from flask import (
 )
 from werkzeug.utils import secure_filename
 import os
+import threading
 
 from database import (
     create_job,
@@ -15,6 +16,7 @@ from database import (
     upload_file
 )
 from database import supabase
+from worker import run_worker
 
 
 # =========================
@@ -28,6 +30,10 @@ os.makedirs(UPLOAD_DIR, exist_ok=True)
 ALLOWED_ACTIONS = {"compress", "convert"}
 
 app = Flask(__name__)
+
+# Start worker in background thread
+worker_thread = threading.Thread(target=run_worker, daemon=True)
+worker_thread.start()
 
 
 # =========================
