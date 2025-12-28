@@ -5,13 +5,3 @@ builder = "NIXPACKS"
 numReplicas = 1
 restartPolicyType = "ON_FAILURE"
 restartPolicyMaxRetries = 10
-
-[[deploy.environmentVariables]]
-name = "PYTHON_VERSION"
-value = "3.12"
-
-[build.nixpacksConfig]
-nixpacksPlan = "python"
-# Required system packages for conversions
-aptPkgs = ["ffmpeg", "ghostscript", "poppler-utils", "libreoffice"]
-

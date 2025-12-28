@@ -1,19 +1,13 @@
 # MahaConvert Nixpacks Configuration
-# See: https://nixpacks.com/docs/providers/python
+# https://nixpacks.com/docs/configuration/file
 
 [phases.setup]
-aptPkgs = [
-    "ffmpeg",
-    "ghostscript", 
-    "poppler-utils",
-    "libreoffice-core",
-    "libreoffice-writer",
-    "libreoffice-calc",
-    "libreoffice-impress"
-]
+nixPkgs = ["python312", "ffmpeg", "ghostscript", "poppler_utils"]
+aptPkgs = ["libreoffice-core", "libreoffice-writer", "libreoffice-calc", "libreoffice-impress"]
 
 [phases.install]
+dependsOn = ["setup"]
 cmds = ["pip install -r requirements.txt"]
 
 [start]
-cmd = "gunicorn app:app"
+cmd = "gunicorn app:app --bind 0.0.0.0:$PORT"
