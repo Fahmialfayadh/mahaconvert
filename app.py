@@ -152,29 +152,6 @@ def download(job_id):
         }
     )
 
-@app.get("/download/<job_id>")
-def download(job_id):
-    url = get_download_url(job_id)
-
-    if not url or "signedURL" not in url:
-        return jsonify({"error": "File not ready"}), 404
-
-    r = requests.get(url["signedURL"], stream=True)
-
-    if r.status_code != 200:
-        return jsonify({"error": "Failed to fetch file"}), 500
-
-    filename = url["signedURL"].split("/")[-1].split("?")[0]
-
-    return Response(
-        r.iter_content(chunk_size=8192),
-        headers={
-            "Content-Disposition": f'attachment; filename="{filename}"',
-            "Content-Type": r.headers.get("Content-Type", "application/octet-stream")
-        }
-    )
-
-
 
 
 # =========================
