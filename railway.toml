@@ -1,5 +1,9 @@
 [build]
 builder = "NIXPACKS"
+nixpacksConfigPath = ""
+
+[build.nixpacksPlan.phases.setup]
+nixPkgs = ["python312", "ffmpeg-full", "ghostscript", "poppler_utils"]
 
 [deploy]
 numReplicas = 1
