@@ -1,27 +1,28 @@
-# Image processing
-Pillow
-pillow-avif-plugin
+# Web Framework
+Flask==3.0.0
+Werkzeug==3.0.1
+gunicorn==21.2.0
 
-# Audio processing
-pydub
+# Database
+supabase==2.3.0
 
-# Video processing (Python wrapper)
-ffmpeg-python
+# Environment
+python-dotenv==1.0.0
 
-# PDF processing
-pypdf
+# Image Processing
+Pillow==10.2.0
+pillow-avif-plugin==1.3.1
 
-# General compression
-zstandard
-brotli
+# Audio Processing
+pydub==0.25.1
 
-#api
-flask
-pillow pillow-avif-plugin
-pydub ffmpeg-python
-pypdf
-zstandard brotli 
-pdf2image
-supabase
-python-dotenv
-zipfile36
+# Video Processing
+ffmpeg-python==0.2.0
+
+# PDF Processing
+pypdf==4.0.0
+pdf2image==1.17.0
+
+# Compression
+zstandard==0.22.0
+Brotli==1.1.0
