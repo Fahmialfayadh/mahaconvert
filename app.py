@@ -136,7 +136,7 @@ def download(job_id):
             "error": "File not ready or job not finished"
         }), 404
 
-    return redirect(url["signedURL"])
+    return redirect(url["signedUrl"])
 
 
 # =========================
