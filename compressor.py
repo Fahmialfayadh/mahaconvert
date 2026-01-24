@@ -24,6 +24,7 @@ class MahaCompressor:
     # ==================================================
     def compress(self, input_path: str, target_percent: int = 70) -> str:
         ftype = self._detect_type(input_path)
+        ext = os.path.splitext(input_path)[1].lower().replace(".", "")
 
         if ftype == "image":
             return self._compress_image(input_path, target_percent)
@@ -37,10 +38,21 @@ class MahaCompressor:
         if ftype == "pdf":
             return self._compress_pdf(input_path, target_percent)
 
+        if ftype == "archive":
+            return self._copy_archive(input_path)
+
         if ftype == "text":
             return self.mc.zstd(input_path, level=min(22, target_percent // 4))
 
         return self.mc.brotli(input_path, quality=min(11, target_percent // 8))
+
+    def _copy_archive(self, input_path):
+        """Archives are already compressed, just copy to output directory"""
+        import shutil
+        name = os.path.basename(input_path)
+        output = os.path.join(self.output_dir, name)
+        shutil.copy2(input_path, output)
+        return output
 
     # ==================================================
     # IMAGE — DIRECT QUALITY MAPPING (FAST)
@@ -63,11 +75,18 @@ class MahaCompressor:
             
         output = os.path.join(self.output_dir, f"{name}.{out_ext}")
 
+        Image.MAX_IMAGE_PIXELS = None
         img = Image.open(input_path)
+        print(f"[DEBUG] Opened image {input_path} with mode {img.mode} and size {img.size}")
+
         
-        # Convert RGBA to RGB for JPEG
-        if img.mode in ("RGBA", "P") and out_ext in ("jpg", "jpeg"):
-            img = img.convert("RGB")
+        # Convert RGBA/P/F/I to RGB for JPEG
+        if out_ext in ("jpg", "jpeg"):
+            if img.mode != "RGB":
+                img = img.convert("RGB")
+        # Ensure compatible modes for other formats
+        elif out_ext == "png" and img.mode not in ("RGB", "RGBA", "L", "P", "1"):
+             img = img.convert("RGBA")
 
         # Map 0-90% to quality 95-5
         quality = max(5, int(95 - target_percent))
@@ -196,20 +215,41 @@ class MahaCompressor:
     # ==================================================
     # DETECTOR
     # ==================================================
+    # ==================================================
+    # DETECTOR
+    # ==================================================
     def _detect_type(self, path: str) -> str:
-        mime, _ = mimetypes.guess_type(path)
-        if not mime:
-            return "binary"
-
-        main, sub = mime.split("/")
-        if main == "image":
+        # 1. Force extension check first for robustness
+        ext = os.path.splitext(path)[1].lower().replace(".", "")
+        
+        # Images
+        if ext in ("jpg", "jpeg", "png", "webp", "avif", "bmp", "heic", "heif", "tiff", "tif", "ico", "jxl"):
             return "image"
-        if main == "audio":
+            
+        # Audio
+        if ext in ("mp3", "wav", "opus", "aac", "ogg", "flac", "m4a", "aiff", "aif", "wma", "mid", "midi"):
             return "audio"
-        if main == "video":
+            
+        # Video
+        if ext in ("mp4", "webm", "mkv", "avi", "mov", "flv", "gif", "3gp", "3g2", "mpeg", "mpg", "ogv", "wmv"):
             return "video"
-        if mime == "application/pdf":
+            
+        # PDF
+        if ext == "pdf":
             return "pdf"
-        if main == "text":
-            return "text"
+            
+        # Archives
+        if ext in ("zip", "7z", "rar", "gz", "tar", "bz2", "xz"):
+            return "archive"
+
+        # 2. Fallback to mimetype
+        mime, _ = mimetypes.guess_type(path)
+        if mime:
+            main, sub = mime.split("/")
+            if main == "image": return "image"
+            if main == "audio": return "audio"
+            if main == "video": return "video"
+            if mime == "application/pdf": return "pdf"
+            if main == "text": return "text"
+
         return "binary"

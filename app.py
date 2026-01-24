@@ -132,17 +132,18 @@ from flask import Response
 
 @app.get("/download/<job_id>")
 def download(job_id):
-    url = get_download_url(job_id)
+    try:
+        url_data, filename = get_download_url(job_id)
+    except Exception:
+        return jsonify({"error": "Job not found or file not ready"}), 404
 
-    if not url or "signedURL" not in url:
+    if not url_data or "signedURL" not in url_data:
         return jsonify({"error": "File not ready"}), 404
 
-    r = requests.get(url["signedURL"], stream=True)
+    r = requests.get(url_data["signedURL"], stream=True)
 
     if r.status_code != 200:
         return jsonify({"error": "Failed to fetch file"}), 500
-
-    filename = url["signedURL"].split("/")[-1].split("?")[0]
 
     return Response(
         r.iter_content(chunk_size=8192),

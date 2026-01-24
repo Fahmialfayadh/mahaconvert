@@ -46,11 +46,12 @@ def get_download_url(job_id):
     new_ext = os.path.splitext(job["output_path"])[1]
     final_name = f"{original_name}{new_ext}"
 
-    return supabase.storage.from_("mahaconvert-output").create_signed_url(
+    url = supabase.storage.from_("mahaconvert-output").create_signed_url(
         job["output_path"], 
         3600,
         options={'download': final_name}
     )
+    return url, final_name
 
 def upload_file(file_obj, filename):
     """

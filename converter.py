@@ -36,10 +36,11 @@ except ImportError:
 
 class MahaConvert:
     # Extended format sets for bidirectional support
-    IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp", "avif", "bmp", "heic"}
-    AUDIO_FORMATS = {"mp3", "wav", "opus", "aac", "ogg", "flac", "m4a", "aiff"}
-    VIDEO_FORMATS = {"mp4", "webm", "mkv", "avi", "mov", "flv", "gif"}
-    DOC_FORMATS = {"pdf", "docx", "pptx", "xlsx", "doc", "ppt", "xls"}
+    IMAGE_FORMATS = {"jpg", "jpeg", "png", "webp", "avif", "bmp", "heic", "heif", "tiff", "tif", "ico", "jxl"}
+    AUDIO_FORMATS = {"mp3", "wav", "opus", "aac", "ogg", "flac", "m4a", "aiff", "aif", "wma", "mid", "midi", "weba"}
+    VIDEO_FORMATS = {"mp4", "webm", "mkv", "avi", "mov", "flv", "gif", "3gp", "3g2", "mpeg", "mpg", "ogv", "wmv"}
+    DOC_FORMATS = {"pdf", "docx", "pptx", "xlsx", "doc", "ppt", "xls", "csv", "rtf", "txt", "md", "json", "xml", "epub"}
+    ARCHIVE_FORMATS = {"zip", "7z", "rar"}
 
     def __init__(self, output_dir="output"):
         self.output_dir = output_dir
@@ -147,6 +148,37 @@ class MahaConvert:
                 images = self.pdf_to_images(input_path, to_format="png", dpi=200)
                 return images[0]
 
+        # ========== CSV ==========
+        if input_ext == "csv":
+            if request_format == "xlsx":
+                return self.csv_to_xlsx(input_path)
+            elif request_format == "pdf":
+                return self.office_to_pdf(input_path)
+            else:
+                # Default: convert to XLSX
+                return self.csv_to_xlsx(input_path)
+
+        # ========== TEXT/MARKUP FILES ==========
+        if input_ext in ("txt", "md", "markdown", "json", "xml"):
+            if request_format == "pdf":
+                return self.text_to_pdf(input_path)
+            else:
+                return self.text_to_pdf(input_path)
+
+        # ========== EPUB ==========
+        if input_ext == "epub":
+            if request_format == "pdf":
+                return self.office_to_pdf(input_path)
+            else:
+                return self.office_to_pdf(input_path)
+
+        # ========== RTF ==========
+        if input_ext == "rtf":
+            if request_format == "pdf":
+                return self.office_to_pdf(input_path)
+            else:
+                return self.office_to_pdf(input_path)
+
         # ========== OFFICE DOCUMENTS ==========
         if input_ext in ("docx", "doc", "pptx", "ppt", "xlsx", "xls"):
             if request_format == "pdf":
@@ -180,9 +212,22 @@ class MahaConvert:
 
         img = Image.open(input_path)
 
-        # PNG → JPG needs RGB
-        if img.mode in ("RGBA", "P") and to_format in ("jpg", "jpeg"):
-            img = img.convert("RGB")
+        # Convert RGBA/P/F/I to RGB if target is JPEG
+        if to_format in ("jpg", "jpeg"):
+            if img.mode != "RGB":
+                try:
+                    img = img.convert("RGB")
+                    print(f"[DEBUG] Converted {img.mode} to RGB")
+                except:
+                    # Fallback for complex modes like F
+                    if img.mode == 'F':
+                         img = img.convert('L').convert('RGB')
+                    else:
+                        img = img.convert("RGB")
+        
+        # Ensure compatible mode for PNG
+        elif to_format == "png" and img.mode not in ("RGB", "RGBA", "L", "P", "1"):
+            img = img.convert("RGBA")
 
         name = os.path.splitext(os.path.basename(input_path))[0]
         output = self._out(name, to_format)
@@ -574,3 +619,95 @@ class MahaConvert:
         output = self._out(name, "pdf")
         return output
 
+    # ==================================================
+    # CSV → XLSX (EXCEL)
+    # ==================================================
+    def csv_to_xlsx(self, input_path):
+        """Convert CSV to Excel XLSX format"""
+        try:
+            import pandas as pd
+        except ImportError:
+            raise ValueError("pandas and openpyxl required for CSV conversion. Install with: pip install pandas openpyxl")
+
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "xlsx")
+
+        try:
+            # Try different encodings
+            for encoding in ['utf-8', 'latin-1', 'cp1252']:
+                try:
+                    df = pd.read_csv(input_path, encoding=encoding)
+                    break
+                except UnicodeDecodeError:
+                    continue
+            else:
+                raise ValueError("Could not decode CSV file with any common encoding")
+
+            df.to_excel(output, index=False, engine='openpyxl')
+        except Exception as e:
+            raise ValueError(f"CSV to XLSX conversion failed: {str(e)}")
+
+        return output
+
+    # ==================================================
+    # TEXT → PDF
+    # ==================================================
+    def text_to_pdf(self, input_path):
+        """Convert text/markdown/json/xml files to PDF"""
+        try:
+            from reportlab.lib.pagesizes import A4
+            from reportlab.lib.styles import getSampleStyleSheet, ParagraphStyle
+            from reportlab.platypus import SimpleDocTemplate, Paragraph, Spacer
+            from reportlab.lib.units import inch
+        except ImportError:
+            raise ValueError("reportlab required for text to PDF conversion. Install with: pip install reportlab")
+
+        name = os.path.splitext(os.path.basename(input_path))[0]
+        output = self._out(name, "pdf")
+
+        # Read text content with encoding fallback
+        content = None
+        for encoding in ['utf-8', 'latin-1', 'cp1252']:
+            try:
+                with open(input_path, 'r', encoding=encoding) as f:
+                    content = f.read()
+                break
+            except UnicodeDecodeError:
+                continue
+
+        if content is None:
+            raise ValueError("Could not decode text file with any common encoding")
+
+        # Create PDF
+        doc = SimpleDocTemplate(output, pagesize=A4,
+                                rightMargin=72, leftMargin=72,
+                                topMargin=72, bottomMargin=72)
+
+        styles = getSampleStyleSheet()
+        code_style = ParagraphStyle(
+            'Code',
+            parent=styles['Normal'],
+            fontName='Courier',
+            fontSize=9,
+            leading=12,
+            spaceAfter=6
+        )
+
+        story = []
+        
+        # Split content into lines and create paragraphs
+        lines = content.split('\n')
+        for line in lines:
+            # Escape special characters for reportlab
+            line = line.replace('&', '&amp;')
+            line = line.replace('<', '&lt;')
+            line = line.replace('>', '&gt;')
+            line = line.replace(' ', '&nbsp;') if line.startswith(' ') else line
+            
+            if line.strip():
+                story.append(Paragraph(line, code_style))
+            else:
+                story.append(Spacer(1, 6))
+
+        doc.build(story)
+        return output

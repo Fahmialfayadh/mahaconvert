@@ -93,7 +93,12 @@ def run_worker():
                 )
                 print(f"[ERROR] Job {job_id}: {e}")
 
-        time.sleep(1)
+        # If no jobs found, wait longer to reduce DB load
+        if not jobs.data:
+            time.sleep(3)
+        else:
+            # If jobs found, process them and then check again quickly
+            time.sleep(0.1)
 
 
 if __name__ == "__main__":
