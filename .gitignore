@@ -7,3 +7,7 @@ uploads/
 output/
 *.log
 .DS_Store
+test_output/
+check_deps.py
+test_*.py
+test_*.jpg

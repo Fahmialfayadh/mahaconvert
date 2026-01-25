@@ -1,273 +1,597 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
+    <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>MahaConvert | File Converter & Compressor</title>
 
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>MahaConvert | File Converter & Compressor</title>
+        <!-- Bootstrap -->
+        <link
+            href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+            rel="stylesheet"
+        />
+        <link
+            rel="stylesheet"
+            href="{{ url_for('static', filename='style.css') }}"
+        />
+        <link
+            rel="icon"
+            href="{{ url_for('static', filename='assets/logo3.png') }}"
+        />
+        <!-- Tailwind CSS -->
+        <script src="https://cdn.tailwindcss.com"></script>
+        <script>
+            tailwind.config = {
+                theme: {
+                    extend: {
+                        colors: {
+                            brand: {
+                                50: "#f5f3ff",
+                                100: "#ede9fe",
+                                200: "#ddd6fe",
+                                300: "#c4b5fd",
+                                400: "#a78bfa",
+                                500: "#8b5cf6",
+                                600: "#7c3aed", // Vibrant Purple (Primary)
+                                700: "#6d28d9",
+                                800: "#5b21b6",
+                                900: "#4c1d95",
+                            },
+                            dark: {
+                                900: "#0f172a",
+                                800: "#1e293b",
+                                700: "#334155",
+                            },
+                        },
+                        fontFamily: {
+                            sans: ["Inter", "sans-serif"],
+                            display: ["Outfit", "sans-serif"],
+                        },
+                        boxShadow: {
+                            glow: "0 0 50px -12px rgba(124, 58, 237, 0.25)",
+                        },
+                    },
+                },
+            };
+        </script>
+    </head>
 
-  <!-- Bootstrap -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
-  <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-  <link rel="icon" href="{{ url_for('static', filename='assets/logo3.png') }}">
-</head>
-
-<body>
-  <div class="app-wrapper">
-
-    <div class="app-card">
-
-      <!-- NAV -->
-      <div class="d-flex justify-content-center pt-4 mb-3">
-        <ul class="nav nav-pills" id="pills-tab" role="tablist">
-          <li class="nav-item" role="presentation">
-            <button class="nav-link active" id="pills-landing-tab" data-bs-toggle="pill" data-bs-target="#pills-landing"
-              type="button" role="tab">Home</button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <button class="nav-link" id="pills-app-tab" data-bs-toggle="pill" data-bs-target="#pills-app" type="button"
-              role="tab">App</button>
-          </li>
-          <li class="nav-item" role="presentation">
-            <a class="nav-link" href="https://mahalabs.fahmialfayadh.site" target="_blank" rel="noopener">Mahalabs</a>
-          </li>
-        </ul>
-      </div>
-
-      <div class="tab-content" id="pills-tabContent">
-
-        <!-- === LANDING PAGE (DEFAULT) === -->
-        <div class="tab-pane fade show active" id="pills-landing" role="tabpanel">
-          <div class="card-body text-center">
-
-            <!-- BADGE LABEL -->
-            <div class="mb-4">
-              <span class="badge-label">File Converter Tool</span>
-            </div>
-
-            <!-- TITLE -->
-            <h2 class="app-title mb-3">Maha<span>Convert</span></h2>
-
-            <!-- SUBTITLE -->
-            <p class="text-muted mb-3" style="max-width: 320px; margin: 0 auto;">
-              Convert and compress files with ease.
-            </p>
-
-            <!-- BETA LABEL -->
-            <p class="beta-label mb-4">Beta version</p>
-
-            <!-- CTA BUTTONS -->
-            <div class="d-flex justify-content-center gap-2 mb-4">
-              <button class="btn btn-primary rounded-pill px-4 py-2"
-                onclick="document.getElementById('pills-app-tab').click()">
-                Open App
-              </button>
-            </div>
-
-            <hr class="my-4">
-
-            <!-- SUPPORTED FORMATS -->
-            <h5 class="fw-semibold mb-4">Supported Formats</h5>
-
-            <div class="mb-4 text-start">
-              <h6 class="section-label mb-2">Video</h6>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge format-badge">MP4</span>
-                <span class="badge format-badge">WebM</span>
-                <span class="badge format-badge">MKV</span>
-                <span class="badge format-badge">AVI</span>
-                <span class="badge format-badge">MOV</span>
-                <span class="badge format-badge">FLV</span>
-                <span class="badge format-badge">3GP</span>
-                <span class="badge format-badge">MPEG</span>
-                <span class="badge format-badge">WMV</span>
-                <span class="badge format-badge">OGV</span>
-                <span class="badge format-badge">GIF</span>
-              </div>
-              <small class="feature-note">Convert video or extract audio</small>
-            </div>
-
-            <div class="mb-4 text-start">
-              <h6 class="section-label mb-2">Audio</h6>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge format-badge">MP3</span>
-                <span class="badge format-badge">WAV</span>
-                <span class="badge format-badge">OGG</span>
-                <span class="badge format-badge">FLAC</span>
-                <span class="badge format-badge">M4A</span>
-                <span class="badge format-badge">AAC</span>
-                <span class="badge format-badge">AIFF</span>
-                <span class="badge format-badge">WMA</span>
-                <span class="badge format-badge">MIDI</span>
-                <span class="badge format-badge">OPUS</span>
-              </div>
-              <small class="feature-note">Bidirectional audio conversion</small>
-            </div>
-
-            <div class="mb-4 text-start">
-              <h6 class="section-label mb-2">Image</h6>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge format-badge">JPG</span>
-                <span class="badge format-badge">PNG</span>
-                <span class="badge format-badge">WebP</span>
-                <span class="badge format-badge">AVIF</span>
-                <span class="badge format-badge">HEIC</span>
-                <span class="badge format-badge">SVG</span>
-                <span class="badge format-badge">TIFF</span>
-                <span class="badge format-badge">ICO</span>
-                <span class="badge format-badge">BMP</span>
-                <span class="badge format-badge">JXL</span>
-              </div>
-              <small class="feature-note">Includes HEIC, SVG, and modern formats</small>
-            </div>
-
-            <div class="mb-4 text-start">
-              <h6 class="section-label mb-2">Document</h6>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge format-badge">PDF</span>
-                <span class="badge format-badge">DOCX</span>
-                <span class="badge format-badge">PPTX</span>
-                <span class="badge format-badge">XLSX</span>
-                <span class="badge format-badge">CSV</span>
-                <span class="badge format-badge">RTF</span>
-                <span class="badge format-badge">TXT</span>
-                <span class="badge format-badge">MD</span>
-                <span class="badge format-badge">JSON</span>
-                <span class="badge format-badge">XML</span>
-                <span class="badge format-badge">EPUB</span>
-              </div>
-              <small class="feature-note">Office, text, and markup conversion</small>
-            </div>
-
-            <div class="mb-4 text-start">
-              <h6 class="section-label mb-2">Archive</h6>
-              <div class="d-flex flex-wrap gap-2 mb-2">
-                <span class="badge format-badge">ZIP</span>
-                <span class="badge format-badge">7Z</span>
-                <span class="badge format-badge">RAR</span>
-              </div>
-              <small class="feature-note">Compression only</small>
-            </div>
-
-            <hr class="my-4">
-
-            <div class="p-3 rounded-3 footer-brand">
-              <p class="mb-1 fw-semibold" style="color: var(--primary);">Mahalabs</p>
-              <p class="mb-0 text-muted" style="font-size: 12px;">2025</p>
-            </div>
-
-          </div>
+    <body>
+        <!--blob background -->
+        <div class="blob-bg">
+            <div class="blob blob-1"></div>
+            <div class="blob blob-2"></div>
+            <div class="blob blob-3"></div>
         </div>
-
-        <!-- === APP TAB === -->
-        <div class="tab-pane fade" id="pills-app" role="tabpanel">
-
-          <!-- MAIN FORM CARD -->
-          <div class="card-body" id="formCard">
-            <h3 class="text-center fw-bold mb-2">Maha<span style="color: var(--primary);">Convert</span></h3>
-            <p class="text-center text-muted mb-4 small">
-              Upload file to process
-            </p>
-            <!-- FORM -->
-            <form method="POST" enctype="multipart/form-data" id="mainForm">
-
-              <!-- File -->
-              <div class="mb-3">
-                <label class="form-label fw-medium small text-muted mb-2">Select File</label>
-                <input type="file" class="form-control rounded-pill" name="file" id="fileInput" required>
-              </div>
-
-              <!-- Action -->
-              <div class="mb-3">
-                <label class="form-label fw-medium small text-muted mb-2">Action</label>
-                <select name="action" id="action" class="form-select rounded-pill">
-                  <option value="compress">Compress</option>
-                  <option value="convert">Convert</option>
-                </select>
-              </div>
-
-              <!-- Compress -->
-              <div id="compressBox" class="mb-4">
-                <div class="d-flex justify-content-between align-items-center mb-3">
-                  <label class="form-label fw-medium mb-0 text-muted small">Compression Level</label>
-                  <span id="percent" class="fw-semibold" style="color: var(--primary); font-size: 1rem;">50%</span>
+        <div class="app-wrapper">
+            <div class="app-card">
+                <!-- NAV -->
+                <div class="d-flex justify-content-center pt-4 mb-3">
+                    <ul class="nav nav-pills" id="pills-tab" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button
+                                class="nav-link active"
+                                id="pills-landing-tab"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pills-landing"
+                                type="button"
+                                role="tab"
+                            >
+                                Home
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button
+                                class="nav-link"
+                                id="pills-app-tab"
+                                data-bs-toggle="pill"
+                                data-bs-target="#pills-app"
+                                type="button"
+                                role="tab"
+                            >
+                                App
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <a
+                                href="#"
+                                onclick="
+                                    event.preventDefault();
+                                    openLabsModal();
+                                "
+                                class="nav-link"
+                                >Mahalabs</a
+                            >
+                        </li>
+                    </ul>
                 </div>
 
-                <input type="range" class="form-range" name="target" id="targetRange" min="0" max="90" value="50">
+                <div class="tab-content" id="pills-tabContent">
+                    <!-- === LANDING PAGE (DEFAULT) === -->
+                    <div
+                        class="tab-pane fade show active"
+                        id="pills-landing"
+                        role="tabpanel"
+                    >
+                        <div class="card-body text-center">
+                            <!-- BADGE LABEL -->
+                            <div class="mb-4">
+                                <span class="badge-label"
+                                    >File Converter Tool</span
+                                >
+                            </div>
 
-                <div class="d-flex justify-content-between mt-2">
-                  <small class="text-muted" style="font-size: 11px;">Low</small>
-                  <small class="text-muted" style="font-size: 11px;">High</small>
+                            <!-- TITLE -->
+                            <h2 class="app-title mb-3">
+                                Maha<span>Convert</span>
+                            </h2>
+
+                            <!-- SUBTITLE -->
+                            <p
+                                class="text-muted mb-3"
+                                style="max-width: 320px; margin: 0 auto"
+                            >
+                                Convert and compress files with ease.
+                            </p>
+
+                            <!-- BETA LABEL -->
+                            <p class="beta-label mb-4">Beta version</p>
+
+                            <!-- CTA BUTTONS -->
+                            <div
+                                class="d-flex justify-content-center gap-2 mb-4"
+                            >
+                                <button
+                                    class="btn btn-primary rounded-pill px-4 py-2"
+                                    onclick="
+                                        document
+                                            .getElementById('pills-app-tab')
+                                            .click()
+                                    "
+                                >
+                                    Open App
+                                </button>
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <!-- SUPPORTED FORMATS -->
+                            <h5 class="fw-semibold mb-4">Supported Formats</h5>
+
+                            <div class="mb-4 text-start">
+                                <h6 class="section-label mb-2">Video</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge format-badge">MP4</span>
+                                    <span class="badge format-badge">WebM</span>
+                                    <span class="badge format-badge">MKV</span>
+                                    <span class="badge format-badge">AVI</span>
+                                    <span class="badge format-badge">MOV</span>
+                                    <span class="badge format-badge">FLV</span>
+                                    <span class="badge format-badge">3GP</span>
+                                    <span class="badge format-badge">MPEG</span>
+                                    <span class="badge format-badge">WMV</span>
+                                    <span class="badge format-badge">OGV</span>
+                                    <span class="badge format-badge">GIF</span>
+                                </div>
+                                <small class="feature-note"
+                                    >Convert video or extract audio</small
+                                >
+                            </div>
+
+                            <div class="mb-4 text-start">
+                                <h6 class="section-label mb-2">Audio</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge format-badge">MP3</span>
+                                    <span class="badge format-badge">WAV</span>
+                                    <span class="badge format-badge">OGG</span>
+                                    <span class="badge format-badge">FLAC</span>
+                                    <span class="badge format-badge">M4A</span>
+                                    <span class="badge format-badge">AAC</span>
+                                    <span class="badge format-badge">AIFF</span>
+                                    <span class="badge format-badge">WMA</span>
+                                    <span class="badge format-badge">MIDI</span>
+                                    <span class="badge format-badge">OPUS</span>
+                                </div>
+                                <small class="feature-note"
+                                    >Bidirectional audio conversion</small
+                                >
+                            </div>
+
+                            <div class="mb-4 text-start">
+                                <h6 class="section-label mb-2">Image</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge format-badge">JPG</span>
+                                    <span class="badge format-badge">PNG</span>
+                                    <span class="badge format-badge">WebP</span>
+                                    <span class="badge format-badge">AVIF</span>
+                                    <span class="badge format-badge">HEIC</span>
+                                    <span class="badge format-badge">SVG</span>
+                                    <span class="badge format-badge">TIFF</span>
+                                    <span class="badge format-badge">ICO</span>
+                                    <span class="badge format-badge">BMP</span>
+                                    <span class="badge format-badge">JXL</span>
+                                </div>
+                                <small class="feature-note"
+                                    >Includes HEIC, SVG, and modern
+                                    formats</small
+                                >
+                            </div>
+
+                            <div class="mb-4 text-start">
+                                <h6 class="section-label mb-2">Document</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge format-badge">PDF</span>
+                                    <span class="badge format-badge">DOCX</span>
+                                    <span class="badge format-badge">PPTX</span>
+                                    <span class="badge format-badge">XLSX</span>
+                                    <span class="badge format-badge">CSV</span>
+                                    <span class="badge format-badge">RTF</span>
+                                    <span class="badge format-badge">TXT</span>
+                                    <span class="badge format-badge">MD</span>
+                                    <span class="badge format-badge">JSON</span>
+                                    <span class="badge format-badge">XML</span>
+                                    <span class="badge format-badge">EPUB</span>
+                                </div>
+                                <small class="feature-note"
+                                    >Office, text, and markup conversion</small
+                                >
+                            </div>
+
+                            <div class="mb-4 text-start">
+                                <h6 class="section-label mb-2">Archive</h6>
+                                <div class="d-flex flex-wrap gap-2 mb-2">
+                                    <span class="badge format-badge">ZIP</span>
+                                    <span class="badge format-badge">7Z</span>
+                                    <span class="badge format-badge">RAR</span>
+                                </div>
+                                <small class="feature-note"
+                                    >Compression only</small
+                                >
+                            </div>
+
+                            <hr class="my-4" />
+
+                            <div class="p-3 rounded-3 footer-brand">
+                                <p
+                                    class="mb-1 fw-semibold"
+                                    style="color: var(--primary)"
+                                >
+                                    Mahalabs
+                                </p>
+                                <p
+                                    class="mb-0 text-muted"
+                                    style="font-size: 12px"
+                                >
+                                    2025
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- === APP TAB === -->
+                    <div class="tab-pane fade" id="pills-app" role="tabpanel">
+                        <!-- MAIN FORM CARD -->
+                        <div class="card-body" id="formCard">
+                            <h3 class="text-center fw-bold mb-2">
+                                Maha<span style="color: var(--primary)"
+                                    >Convert</span
+                                >
+                            </h3>
+                            <p class="text-center text-muted mb-4 small">
+                                Upload file to process
+                            </p>
+                            <!-- FORM -->
+                            <form
+                                method="POST"
+                                enctype="multipart/form-data"
+                                id="mainForm"
+                            >
+                                <!-- File -->
+                                <div class="mb-3">
+                                    <label
+                                        class="form-label fw-medium small text-muted mb-2"
+                                        >Select File</label
+                                    >
+                                    <input
+                                        type="file"
+                                        class="form-control rounded-pill"
+                                        name="file"
+                                        id="fileInput"
+                                        required
+                                    />
+                                </div>
+
+                                <!-- Action -->
+                                <div class="mb-3">
+                                    <label
+                                        class="form-label fw-medium small text-muted mb-2"
+                                        >Action</label
+                                    >
+                                    <select
+                                        name="action"
+                                        id="action"
+                                        class="form-select rounded-pill"
+                                    >
+                                        <option value="compress">
+                                            Compress
+                                        </option>
+                                        <option value="convert">Convert</option>
+                                    </select>
+                                </div>
+
+                                <!-- Compress -->
+                                <div id="compressBox" class="mb-4">
+                                    <div
+                                        class="d-flex justify-content-between align-items-center mb-3"
+                                    >
+                                        <label
+                                            class="form-label fw-medium mb-0 text-muted small"
+                                            >Compression Level</label
+                                        >
+                                        <span
+                                            id="percent"
+                                            class="fw-semibold"
+                                            style="
+                                                color: var(--primary);
+                                                font-size: 1rem;
+                                            "
+                                            >50%</span
+                                        >
+                                    </div>
+
+                                    <input
+                                        type="range"
+                                        class="form-range"
+                                        name="target"
+                                        id="targetRange"
+                                        min="0"
+                                        max="90"
+                                        value="50"
+                                    />
+
+                                    <div
+                                        class="d-flex justify-content-between mt-2"
+                                    >
+                                        <small
+                                            class="text-muted"
+                                            style="font-size: 11px"
+                                            >Low</small
+                                        >
+                                        <small
+                                            class="text-muted"
+                                            style="font-size: 11px"
+                                            >High</small
+                                        >
+                                    </div>
+                                    <small
+                                        class="d-block mt-2 small"
+                                        id="compressHint"
+                                    ></small>
+                                </div>
+
+                                <!-- Convert -->
+                                <div id="convertBox" class="mb-4 d-none">
+                                    <label
+                                        class="form-label fw-medium text-muted mb-2 small"
+                                        >Convert to</label
+                                    >
+                                    <select
+                                        name="to_format"
+                                        id="toFormat"
+                                        class="form-select rounded-pill"
+                                    ></select>
+                                    <small
+                                        class="text-muted d-block mt-2 small"
+                                        id="convertHint"
+                                    ></small>
+                                </div>
+
+                                <!-- Submit -->
+                                <button
+                                    type="submit"
+                                    class="btn btn-primary w-100 rounded-pill py-3"
+                                >
+                                    <span class="fw-medium">Process File</span>
+                                </button>
+                            </form>
+                            <div class="mt-4">
+                                <p
+                                    class="text-center text-muted mb-0"
+                                    style="font-size: 11px"
+                                >
+                                    Beta version. Report issues to
+                                    <a
+                                        href="mailto:fahmialfayadh@outlook.com"
+                                        style="color: var(--primary)"
+                                        >fahmialfayadh@outlook.com</a
+                                    >
+                                </p>
+                            </div>
+                        </div>
+
+                        <!-- SUCCESS STATE -->
+                        <div class="card-body d-none text-center" id="doneCard">
+                            <div class="mb-3">
+                                <svg
+                                    width="64"
+                                    height="64"
+                                    viewBox="0 0 64 64"
+                                    fill="none"
+                                    xmlns="http://www.w3.org/2000/svg"
+                                >
+                                    <circle
+                                        cx="32"
+                                        cy="32"
+                                        r="30"
+                                        fill="#7c3aed"
+                                        opacity="0.1"
+                                    />
+                                    <path
+                                        d="M20 32L28 40L44 24"
+                                        stroke="#7c3aed"
+                                        stroke-width="4"
+                                        stroke-linecap="round"
+                                        stroke-linejoin="round"
+                                    />
+                                </svg>
+                            </div>
+                            <h4 class="fw-bold mb-2">Success</h4>
+                            <p class="text-muted mb-4 small">
+                                Your file has been processed.
+                            </p>
+
+                            <button
+                                class="btn btn-outline-primary rounded-pill px-4 py-2"
+                                onclick="location.reload()"
+                            >
+                                Process Another
+                            </button>
+                        </div>
+                    </div>
                 </div>
-                <small class="d-block mt-2 small" id="compressHint"></small>
-              </div>
-
-              <!-- Convert -->
-              <div id="convertBox" class="mb-4 d-none">
-                <label class="form-label fw-medium text-muted mb-2 small">Convert to</label>
-                <select name="to_format" id="toFormat" class="form-select rounded-pill"></select>
-                <small class="text-muted d-block mt-2 small" id="convertHint"></small>
-              </div>
-
-              <!-- Submit -->
-              <button type="submit" class="btn btn-primary w-100 rounded-pill py-3">
-                <span class="fw-medium">Process File</span>
-              </button>
-
-            </form>
-            <div class="mt-4">
-              <p class="text-center text-muted mb-0" style="font-size: 11px;">
-                Beta version. Report issues to <a href="mailto:fahmialfayadh@outlook.com"
-                  style="color: var(--primary);">fahmialfayadh@outlook.com</a>
-              </p>
             </div>
-          </div>
-
-          <!-- SUCCESS STATE -->
-          <div class="card-body d-none text-center" id="doneCard">
-            <div class="mb-3">
-              <svg width="64" height="64" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg">
-                <circle cx="32" cy="32" r="30" fill="#7c3aed" opacity="0.1" />
-                <path d="M20 32L28 40L44 24" stroke="#7c3aed" stroke-width="4" stroke-linecap="round"
-                  stroke-linejoin="round" />
-              </svg>
-            </div>
-            <h4 class="fw-bold mb-2">Success</h4>
-            <p class="text-muted mb-4 small">
-              Your file has been processed.
-            </p>
-
-            <button class="btn btn-outline-primary rounded-pill px-4 py-2" onclick="location.reload()">
-              Process Another
-            </button>
-          </div>
-
         </div>
 
-      </div>
+        <!-- LOADING OVERLAY -->
+        <div id="loadingOverlay" class="loading-overlay d-none">
+            <div class="loading-card text-center">
+                <div
+                    class="spinner-border mb-3"
+                    role="status"
+                    style="width: 2.5rem; height: 2.5rem"
+                >
+                    <span class="visually-hidden">Loading...</span>
+                </div>
+                <h6 class="fw-semibold mb-3" id="loadingStatus">
+                    Initializing...
+                </h6>
 
-    </div>
-  </div>
+                <div class="progress mb-2">
+                    <div
+                        id="progressBar"
+                        class="progress-bar progress-bar-striped progress-bar-animated"
+                        style="width: 0%"
+                    ></div>
+                </div>
 
-  <!-- LOADING OVERLAY -->
-  <div id="loadingOverlay" class="loading-overlay d-none">
-    <div class="loading-card text-center">
-      <div class="spinner-border mb-3" role="status" style="width: 2.5rem; height: 2.5rem;">
-        <span class="visually-hidden">Loading...</span>
-      </div>
-      <h6 class="fw-semibold mb-3" id="loadingStatus">Initializing...</h6>
+                <small class="text-muted" id="progressText">0%</small>
+            </div>
+        </div>
+        <div
+            id="labsModal"
+            class="fixed inset-0 z-[100] hidden"
+            role="dialog"
+            aria-modal="true"
+        >
+            <div
+                class="fixed inset-0 bg-slate-900/60 backdrop-blur-sm transition-opacity opacity-0"
+                id="labsBackdrop"
+                onclick="closeLabsModal()"
+            ></div>
+            <div class="fixed inset-0 z-10 overflow-y-auto">
+                <div
+                    class="flex min-h-full items-center justify-center p-4 text-center"
+                >
+                    <div
+                        class="relative transform overflow-hidden rounded-3xl bg-white text-left shadow-2xl transition-all sm:w-full sm:max-w-md scale-90 opacity-0 duration-300"
+                        id="labsPanel"
+                    >
+                        <!-- Decorative Header -->
+                        <div
+                            class="bg-gradient-to-br from-[#f5f3ff] via-white to-[#eff6ff] p-10 text-center relative overflow-hidden"
+                        >
+                            <!-- Gradient Orbs -->
+                            <div
+                                class="absolute -top-10 -left-10 w-40 h-40 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse"
+                            ></div>
+                            <div
+                                class="absolute -bottom-10 -right-10 w-40 h-40 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-pulse delay-1000"
+                            ></div>
 
-      <div class="progress mb-2">
-        <div id="progressBar" class="progress-bar progress-bar-striped progress-bar-animated" style="width:0%"></div>
-      </div>
+                            <div class="relative z-10">
+                                <div class="mx-auto mb-6 flex justify-center">
+                                    <span
+                                        class="bg-white/50 backdrop-blur-md p-4 rounded-2xl shadow-sm ring-1 ring-black/5"
+                                    >
+                                        <img
+                                            src="{{ url_for('static', filename='assets/logo3.png') }}"
+                                            alt="Logo"
+                                            class="w-12 h-12 object-contain"
+                                        />
+                                    </span>
+                                </div>
+                                <h3
+                                    class="text-3xl font-display font-bold text-[#2e1065] mb-2 tracking-tight"
+                                >
+                                    MahaLabs
+                                </h3>
+                                <p class="text-[#5b21b6] font-medium text-sm">
+                                    Explore experimental ideas.
+                                </p>
+                            </div>
+                        </div>
 
-      <small class="text-muted" id="progressText">0%</small>
-    </div>
-  </div>
+                        <div class="px-8 py-8">
+                            <p
+                                class="text-slate-600 text-center mb-8 leading-relaxed"
+                            >
+                                Jelajahi ekosistem aplikasi kami lainnya di
+                                MahaLabs
+                            </p>
 
-  <!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='script.js') }}"></script>
-</body>
+                            <div class="space-y-3">
+                                <a
+                                    href="https://mahalabs.space"
+                                    target="_blank"
+                                    onclick="closeLabsModal()"
+                                    class="flex items-center justify-center w-full px-6 py-4 bg-gradient-to-r from-brand-300 to-brand-600 text-white rounded-xl font-bold hover:bg-brand-700 hover:shadow-lg hover:shadow-brand-500/30 transition transform hover:-transform-scale(0.5) gap-2 group"
+                                >
+                                    Lihat MahaLabs
+                                </a>
+                                <button
+                                    type="button"
+                                    onclick="closeLabsModal()"
+                                    class="flex items-center justify-center w-full px-6 py-4 bg-slate-50 text-slate-700 rounded-xl font-medium hover:bg-slate-100 transition-all duration-300"
+                                >
+                                    Nanti Saja
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <!-- Bootstrap JS -->
+        <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+        <script src="{{ url_for('static', filename='script.js') }}"></script>
+        <script>
+            function openLabsModal() {
+                const modal = document.getElementById("labsModal");
+                const backdrop = document.getElementById("labsBackdrop");
+                const panel = document.getElementById("labsPanel");
 
+                modal.classList.remove("hidden");
+                // Animate in
+                setTimeout(() => {
+                    backdrop.classList.remove("opacity-0");
+                    panel.classList.remove("opacity-0", "scale-90");
+                    panel.classList.add("opacity-100", "scale-100");
+                }, 10);
+            }
+
+            function closeLabsModal() {
+                const modal = document.getElementById("labsModal");
+                const backdrop = document.getElementById("labsBackdrop");
+                const panel = document.getElementById("labsPanel");
+
+                backdrop.classList.add("opacity-0");
+                panel.classList.remove("opacity-100", "scale-100");
+                panel.classList.add("opacity-0", "scale-90");
+
+                setTimeout(() => {
+                    modal.classList.add("hidden");
+                }, 300);
+            }
+        </script>
+    </body>
 </html>
