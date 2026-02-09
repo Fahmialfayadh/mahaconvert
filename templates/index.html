@@ -3,7 +3,28 @@
     <head>
         <meta charset="UTF-8" />
         <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-        <title>MahaConvert | File Converter & Compressor</title>
+        <title>MahaConvert by Asymptra | File Converter & Compressor</title>
+        <meta name="description" content="Convert and compress files effortlessly. MahaConvert supports image, document, and media conversion with powerful compression — by Asymptra Labs." />
+        <meta name="author" content="Asymptra Labs — asymptra.com" />
+        <meta name="robots" content="index, follow" />
+        <meta name="theme-color" content="#7c3aed" />
+
+        <!-- Canonical -->
+        <link rel="canonical" href="https://mahaconvert.asymptra.com/" />
+
+        <!-- Open Graph -->
+        <meta property="og:type" content="website" />
+        <meta property="og:site_name" content="MahaConvert by Asymptra" />
+        <meta property="og:title" content="MahaConvert by Asymptra | File Converter & Compressor" />
+        <meta property="og:description" content="Convert and compress files effortlessly. Supports image, document, and media conversion with powerful compression." />
+        <meta property="og:image" content="https://mahaconvert.asymptra.com/static/assets/logo3.png" />
+        <meta property="og:url" content="https://mahaconvert.asymptra.com/" />
+
+        <!-- Twitter Card -->
+        <meta name="twitter:card" content="summary" />
+        <meta name="twitter:title" content="MahaConvert by Asymptra | File Converter & Compressor" />
+        <meta name="twitter:description" content="Convert and compress files effortlessly. By Asymptra Labs." />
+        <meta name="twitter:image" content="https://mahaconvert.asymptra.com/static/assets/logo3.png" />
 
         <!-- Bootstrap -->
         <link
@@ -14,10 +35,10 @@
             rel="stylesheet"
             href="{{ url_for('static', filename='style.css') }}"
         />
-        <link
-            rel="icon"
-            href="{{ url_for('static', filename='assets/logo3.png') }}"
-        />
+
+        <!-- Favicon & Icons -->
+        <link rel="icon" type="image/png" href="{{ url_for('static', filename='assets/logo3.png') }}" />
+        <link rel="apple-touch-icon" href="{{ url_for('static', filename='assets/logo3.png') }}" />
         <!-- Tailwind CSS -->
         <script src="https://cdn.tailwindcss.com"></script>
         <script>
